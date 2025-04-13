@@ -32,8 +32,13 @@ jobs:
               break
             fi
           done
+          IP=$(curl -s ifconfig.me)
+
           echo "Chosen port: $PORT"
+          echo "External IP: $IP"
+
           echo "port=$PORT" >> "$GITHUB_OUTPUT"
+          echo "ip=$IP" >> "$GITHUB_OUTPUT"
 
           docker run -d -p $PORT:80 ${{ steps.vars.outputs.image }}
 
