@@ -11,8 +11,17 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
+      - name: Set image name
+        id: vars
+        run: |
+          BRANCH_NAME=$(echo "${GITHUB_REF##*/}" | tr '/' '-' | tr -cd '[:alnum:]-')
+          COMMIT_HASH=$(echo "${GITHUB_SHA}" | cut -c1-7)
+          IMAGE_NAME="${BRANCH_NAME}-${COMMIT_HASH}"
+          echo "IMAGE_NAME=$IMAGE_NAME"
+          echo "image=$IMAGE_NAME" >> "$GITHUB_OUTPUT"
+
       - name: Build Docker image
-        run: docker build -t my-backend-app .
+        run: docker build -t ${{ steps.vars.outputs.image }} .
 
       - name: Choosing port and run container
         id: run
@@ -26,9 +35,9 @@ jobs:
           echo "Chosen port: $PORT"
           echo "port=$PORT" >> "$GITHUB_OUTPUT"
 
-          docker run -d -p $PORT:80 --name my-backend my-backend-app
+          docker run -d -p $PORT:80 ${{ steps.vars.outputs.image }}
 
-          # Оставнока контейнера через 24 часа, с помощью гитхаб акшенс
+          # Оставнока контейнера через 24 часа
           echo "docker stop my-backend && docker rm my-backend" | at now + 1 day
 
       - name: Show ip
