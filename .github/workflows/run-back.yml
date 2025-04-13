@@ -40,7 +40,7 @@ jobs:
           echo "port=$PORT" >> "$GITHUB_OUTPUT"
           echo "ip=$IP" >> "$GITHUB_OUTPUT"
 
-          docker run -d -p $PORT:80 ${{ steps.vars.outputs.image }}
+          docker run -d -p $PORT:8080 ${{ steps.vars.outputs.image }}
 
           # Оставнока контейнера через 24 часа
           echo "docker stop my-backend && docker rm my-backend" | at now + 1 day
