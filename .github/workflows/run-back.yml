@@ -6,6 +6,7 @@ on:
 jobs:
   build-and-run:
     runs-on: self-hosted
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -13,15 +14,22 @@ jobs:
       - name: Build Docker image
         run: docker build -t my-backend-app .
 
-      - name: Choosing port
+      - name: Choosing port and run container
         id: run
         run: |
           for port in $(seq 8000 8100); do
-          if ! ss -Htan | awk '{print $4}' | grep -q ":$port\$"; then
-            PORT=$port
-            break
-          fi
+            if ! ss -Htan | awk '{print $4}' | grep -q ":$port\$"; then
+              PORT=$port
+              break
+            fi
           done
+          echo "Chosen port: $PORT"
+          echo "port=$PORT" >> "$GITHUB_OUTPUT"
 
-      - name: Port
-        run: echo "PORT ${{ steps.run.outputs.port }}"
+          docker run -d -p $PORT:80 --name my-backend my-backend-app
+
+          # Оставнока контейнера через 24 часа, с помощью гитхаб акшенс
+          echo "docker stop my-backend && docker rm my-backend" | at now + 1 day
+
+      - name: Show ip
+        run: echo "IP http://${{ steps.run.outputs.ip }}:${{ steps.run.outputs.port }}"
