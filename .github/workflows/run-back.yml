@@ -26,7 +26,7 @@ jobs:
       - name: Choosing port and run container
         id: run
         run: |
-          for port in $(seq 8000 8100); do
+          for port in $(seq 8081 8200); do
             if ! ss -Htan | awk '{print $4}' | grep -q ":$port\$"; then
               PORT=$port
               break
