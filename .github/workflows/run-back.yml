@@ -16,10 +16,12 @@ jobs:
       - name: Choosing port
         id: run
         run: |
-          PORT=$(comm -23 <(seq 8000 8100 | sort) <(ss -Htan | awk '{print $4}' | grep -o '[0-9]*$' | sort -n | uniq))
-          PORT=$(echo $PORT | cut -d' ' -f1)
-          docker run -d -p $PORT:80 --name my-backend my-backend-app
-          echo "port=$PORT" >> $GITHUB_OUTPUT
+          for port in $(seq 8000 8100); do
+          if ! ss -Htan | awk '{print $4}' | grep -q ":$port\$"; then
+            PORT=$port
+            break
+          fi
+          done
 
       - name: Port
         run: echo "PORT ${{ steps.run.outputs.port }}"
